@@ -1,21 +1,18 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Header from '../components/Header'
+import { clearAccessToken } from '../lib/auth'
+import { useAuth } from '../lib/useAuth'
 import './Profile.css'
 
 const Profile = () => {
-  const [email, setEmail] = useState('user@example.com')
-  const [password, setPassword] = useState('••••••••')
-  const [showChangePassword, setShowChangePassword] = useState(false)
+  const { email, isAuthenticated } = useAuth()
 
   const handleAvatarClick = () => {
     // TODO: Implement avatar change
     console.log('Change avatar clicked')
   }
 
-  const handleChangePassword = () => {
-    setShowChangePassword(!showChangePassword)
-    // TODO: Implement password change logic
-  }
+  const handleLogout = () => clearAccessToken()
 
   return (
     <div className="profile-page">
@@ -42,22 +39,24 @@ const Profile = () => {
             <div className="profile-fields">
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={email || ''}
+                readOnly
                 className="profile-input"
                 placeholder="Почта"
               />
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value="••••••••"
+                readOnly
                 className="profile-input"
                 placeholder="Пароль"
-                disabled={!showChangePassword}
+                disabled
               />
-              <button className="change-password-link" onClick={handleChangePassword}>
-                Изменить пароль
-              </button>
+              {isAuthenticated ? (
+                <button className="change-password-link" onClick={handleLogout}>
+                  Выйти
+                </button>
+              ) : null}
             </div>
           </div>
         </div>

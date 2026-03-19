@@ -1,19 +1,31 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
+import { api } from '../lib/api'
+import { setAccessToken } from '../lib/auth'
 import './Auth.css'
 
 const Login = () => {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement login logic
-    console.log('Login:', { email, password })
-    // Navigate to home after successful login
-    navigate('/')
+    setError('')
+    setLoading(true)
+    try {
+      const data = await api.login(email, password)
+      if (!data?.access_token) throw new Error('Не удалось получить токен')
+      setAccessToken(data.access_token, { token_type: data.token_type })
+      navigate('/')
+    } catch (e2) {
+      setError(e2?.message || 'Ошибка входа')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -23,6 +35,7 @@ const Login = () => {
       <div className="auth-container">
         <div className="auth-card">
           <h1 className="auth-title">Вход</h1>
+          {error ? <div className="auth-error">{error}</div> : null}
           <form onSubmit={handleSubmit} className="auth-form">
             <input
               type="email"
@@ -46,8 +59,8 @@ const Login = () => {
                 Регистрация
               </Link>
             </div>
-            <button type="submit" className="auth-submit-btn">
-              Войти
+            <button type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? 'Вход...' : 'Войти'}
             </button>
           </form>
         </div>

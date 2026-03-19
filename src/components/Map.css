@@ -11,7 +11,33 @@
   z-index: 1;
 }
 
+.leaflet-map {
+  background-color: #d4d7d9;
+  background-image: url('/fckcrsr.png');
+  background-size: cover;
+  background-position: center;
+}
+
 .leaflet-container {
   font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+}
+
+.trust-place-marker-wrap {
+  background: transparent !important;
+  border: none !important;
+}
+
+.trust-place-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 2px solid #878e91;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.trust-place-marker.is-rated {
+  background: #63b389;
+  border-color: #63b389;
 }
 

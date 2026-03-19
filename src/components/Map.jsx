@@ -1,10 +1,35 @@
-import React, { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import React, { useEffect, useMemo } from 'react'
+import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './Map.css'
 
-const Map = ({ center = [55.7558, 37.6173], zoom = 13, onMarkerClick, places = [], interactive = true }) => {
+function MapEvents({ onMapClick }) {
+  useMapEvents({
+    click: (e) => onMapClick?.(e.latlng),
+  })
+  return null
+}
+
+function makePlaceIcon({ isRated }) {
+  const cls = isRated ? 'trust-place-marker is-rated' : 'trust-place-marker'
+  return L.divIcon({
+    className: 'trust-place-marker-wrap',
+    html: `<div class="${cls}"></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  })
+}
+
+const Map = ({
+  center = [55.042135, 82.90138],
+  zoom = 14,
+  onMarkerClick,
+  onMapClick,
+  places = [],
+  routeCoords = [],
+  interactive = true,
+}) => {
   // Fix for default marker icons in React-Leaflet
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof L !== 'undefined') {
@@ -17,11 +42,22 @@ const Map = ({ center = [55.7558, 37.6173], zoom = 13, onMarkerClick, places = [
     }
   }, [])
 
+  const placeIcons = useMemo(() => {
+    const iconMap = new globalThis.Map()
+    for (const p of places) {
+      const rated = Number(p?.average_rating || 0) > 0
+      iconMap.set(p.id, makePlaceIcon({ isRated: rated }))
+    }
+    return iconMap
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places.map((p) => `${p?.id}:${p?.average_rating}`).join('|')])
+
   return (
     <div className="map-container">
       <MapContainer
         center={center}
         zoom={zoom}
+        className="leaflet-map"
         style={{ height: '100%', width: '100%' }}
         zoomControl={interactive}
         dragging={interactive}
@@ -35,20 +71,19 @@ const Map = ({ center = [55.7558, 37.6173], zoom = 13, onMarkerClick, places = [
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {interactive ? <MapEvents onMapClick={onMapClick} /> : null}
+        {Array.isArray(routeCoords) && routeCoords.length > 1 ? (
+          <Polyline pathOptions={{ color: '#63B389', weight: 6, opacity: 0.9 }} positions={routeCoords} />
+        ) : null}
         {places.map((place) => (
           <Marker
             key={place.id}
-            position={[place.lat, place.lng]}
+            position={[place.latitude, place.longitude]}
+            icon={placeIcons.get(place.id)}
             eventHandlers={{
               click: () => onMarkerClick && onMarkerClick(place),
             }}
           >
-            <Popup>
-              <div>
-                <strong>{place.address}</strong>
-                {place.rating && <div>Рейтинг: {place.rating}</div>}
-              </div>
-            </Popup>
           </Marker>
         ))}
       </MapContainer>
