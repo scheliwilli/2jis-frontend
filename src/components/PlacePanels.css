@@ -155,6 +155,32 @@
   line-height: 1.35;
 }
 
+.review-accessibility-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.access-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.access-badge.yes {
+  background: #d4edda;
+  color: #155724;
+}
+
+.access-badge.no {
+  background: #f8d7da;
+  color: #721c24;
+}
+
 .review-form {
   display: flex;
   gap: 10px;
@@ -309,6 +335,140 @@
   background: #000;
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Accessibility form styles */
+.place-accessibility-form {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.accessibility-question {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 14px;
+}
+
+.accessibility-question-text {
+  font-size: 14px;
+  font-weight: 650;
+  color: #111;
+}
+
+.accessibility-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.accessibility-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid #e3e6e7;
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.accessibility-btn:hover:not(:disabled) {
+  border-color: #63b389;
+  background: #f0f8f5;
+}
+
+.accessibility-btn.active {
+  border-color: #63b389;
+  background: #63b389;
+  color: #fff;
+}
+
+.accessibility-btn.active.no {
+  background: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.accessibility-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Inline accessibility form for review section */
+.review-accessibility-form {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  flex: 1;
+}
+
+.accessibility-question-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.accessibility-buttons-inline {
+  display: flex;
+  gap: 6px;
+}
+
+.accessibility-btn-small {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e3e6e7;
+  background: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 44px;
+}
+
+.accessibility-btn-small:hover:not(:disabled) {
+  border-color: #63b389;
+}
+
+.accessibility-btn-small.active {
+  border-color: #63b389;
+  background: #63b389;
+  color: #fff;
+}
+
+.accessibility-btn-small.active.no {
+  background: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.accessibility-btn-small:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.review-form-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-form-label {
+  font-weight: 700;
+  font-size: 13px;
+  color: #111;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 @media (max-width: 980px) {

@@ -25,11 +25,16 @@ const Home = () => {
   const loadPlaces = async () => {
     setError('')
     setLoading(true)
+    console.log('Loading places...')
     try {
       const data = await api.getPlaces()
+      console.log('Places loaded:', data)
       setPlaces(Array.isArray(data) ? data : [])
     } catch (e) {
+      console.error('Error loading places:', e)
       setError(e?.message || 'Не удалось загрузить места')
+      // Даже если произошла ошибка, все равно показываем карту с empty places
+      setPlaces([])
     } finally {
       setLoading(false)
     }
@@ -115,6 +120,7 @@ const Home = () => {
             Маломобильные
           </button>
         </div>
+        
         <Map
           center={center}
           zoom={15}
@@ -124,6 +130,7 @@ const Home = () => {
           routeCoords={routeCoords}
           interactive
         />
+        
         {loading ? <div className="home-toast">Загрузка...</div> : null}
         {error ? <div className="home-toast error">{error}</div> : null}
 

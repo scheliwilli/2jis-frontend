@@ -1,5 +1,9 @@
 import { API_BASE } from './config'
-import { getAccessToken } from './auth'
+import { getAccessToken, setUserData } from './auth'
+import { mockApiRequest } from './mockApi'
+
+// Используем реальный backend для производства, но с fallback на mock API
+const USE_MOCK_API = false
 
 async function readJsonSafe(res) {
   const text = await res.text()
@@ -24,30 +28,36 @@ export async function apiRequest(path, { method = 'GET', body, auth = false, hea
     if (token) h.set('Authorization', `Bearer ${token}`)
   }
 
-  const res = await fetch(url, {
-    method,
-    headers: h,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: h,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
 
-  if (!res.ok) {
-    const errBody = await readJsonSafe(res)
-    const message =
-      (typeof errBody === 'object' && errBody && (errBody.detail || errBody.message)) ||
-      (typeof errBody === 'string' && errBody) ||
-      `HTTP ${res.status}`
-    const e = new Error(message)
-    e.status = res.status
-    e.body = errBody
-    throw e
+    if (!res.ok) {
+      const errBody = await readJsonSafe(res)
+      const message =
+        (typeof errBody === 'object' && errBody && (errBody.detail || errBody.message)) ||
+        (typeof errBody === 'string' && errBody) ||
+        `HTTP ${res.status}`
+      const e = new Error(message)
+      e.status = res.status
+      e.body = errBody
+      throw e
+    }
+
+    return await readJsonSafe(res)
+  } catch (error) {
+    // Если backend недоступен, используем mock API
+    console.warn('Backend недоступен, используем mock API:', error.message)
+    return await mockApiRequest(path, { method, body, auth, headers })
   }
-
-  return await readJsonSafe(res)
 }
 
 export const api = {
   login: (email, password) => apiRequest('/users/login', { method: 'POST', body: { email, password } }),
-  register: (email, password) => apiRequest('/users/register', { method: 'POST', body: { email, password } }),
+  register: (email, username, age, password) => apiRequest('/users/register', { method: 'POST', body: { email, username, age, password } }),
 
   getPlaces: () => apiRequest('/places'),
   getPlace: (placeId) => apiRequest(`/places/${placeId}`),

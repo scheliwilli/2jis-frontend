@@ -39,6 +39,7 @@ const Map = ({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
+      console.log('Leaflet initialized')
     }
   }, [])
 
@@ -48,17 +49,18 @@ const Map = ({
       const rated = Number(p?.average_rating || 0) > 0
       iconMap.set(p.id, makePlaceIcon({ isRated: rated }))
     }
+    console.log('Place icons created:', iconMap.size)
     return iconMap
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [places.map((p) => `${p?.id}:${p?.average_rating}`).join('|')])
 
   return (
-    <div className="map-container">
+    <div className="map-container" style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
       <MapContainer
         center={center}
         zoom={zoom}
         className="leaflet-map"
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
         zoomControl={interactive}
         dragging={interactive}
         touchZoom={interactive}

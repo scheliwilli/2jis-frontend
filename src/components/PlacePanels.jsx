@@ -31,7 +31,11 @@ export default function PlacePanels({ place, reviews, myReview, onClose, onRevie
   const title = place?.name || 'Место'
   const avg = Number(place?.average_rating || 0)
 
-  const [comment, setComment] = useState('')
+  const [accessibility, setAccessibility] = useState({
+    wheelchairs: null,
+    sim: null,
+    mobility: null,
+  })
   const [rating, setRating] = useState(5)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -41,9 +45,9 @@ export default function PlacePanels({ place, reviews, myReview, onClose, onRevie
 
   const accessibilityItems = useMemo(
     () => [
-      { icon: '/kol.svg', label: 'Пригодно для колясочников' },
-      { icon: '/vtlo.svg', label: 'Подойдёт для пользователей СИМ' },
-      { icon: '/ded.svg', label: 'Пригодно для маломобильных граждан' },
+      { key: 'wheelchairs', icon: '/kol.svg', label: 'Пригодно для колясочников' },
+      { key: 'sim', icon: '/vtlo.svg', label: 'Подойдёт для пользователей СИМ' },
+      { key: 'mobility', icon: '/ded.svg', label: 'Пригодно для маломобильных граждан' },
     ],
     []
   )
@@ -53,8 +57,15 @@ export default function PlacePanels({ place, reviews, myReview, onClose, onRevie
     setError('')
     setSubmitting(true)
     try {
-      await api.addReview(place.id, { rating, comment: comment.trim() || null })
-      setComment('')
+      await api.addReview(place.id, { 
+        rating, 
+        accessibility: {
+          wheelchairs: accessibility.wheelchairs,
+          sim: accessibility.sim,
+          mobility: accessibility.mobility,
+        }
+      })
+      setAccessibility({ wheelchairs: null, sim: null, mobility: null })
       setAddMode(false)
       onReviewAdded?.()
     } catch (e) {
@@ -97,14 +108,31 @@ export default function PlacePanels({ place, reviews, myReview, onClose, onRevie
                 </select>
               </div>
 
-              <input
-                type="text"
-                placeholder="Комментарий (необязательно)"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="review-input"
-                disabled={!canAdd || submitting}
-              />
+              <div className="place-accessibility-form">
+                {accessibilityItems.map((item) => (
+                  <div key={item.key} className="accessibility-question">
+                    <div className="accessibility-question-text">{item.label}?</div>
+                    <div className="accessibility-buttons">
+                      <button
+                        type="button"
+                        className={`accessibility-btn ${accessibility[item.key] === true ? 'active yes' : ''}`}
+                        onClick={() => setAccessibility(prev => ({ ...prev, [item.key]: true }))}
+                        disabled={submitting}
+                      >
+                        Да
+                      </button>
+                      <button
+                        type="button"
+                        className={`accessibility-btn ${accessibility[item.key] === false ? 'active no' : ''}`}
+                        onClick={() => setAccessibility(prev => ({ ...prev, [item.key]: false }))}
+                        disabled={submitting}
+                      >
+                        Нет
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {error ? <div className="review-error">{error}</div> : null}
 
@@ -180,8 +208,23 @@ export default function PlacePanels({ place, reviews, myReview, onClose, onRevie
             <div key={r.id} className="review-item">
               <div className="review-avatar" style={{ background: hashColor(r.user_id) }} />
               <div className="review-content">
-                <div className="review-user">Пользователь</div>
-                <div className="review-text">{r.comment || `Оценка: ${r.rating}`}</div>
+                <div className="review-user">Оценка: {r.rating} ★</div>
+                <div className="review-accessibility-display">
+                  {r.accessibility && Object.entries(r.accessibility).map(([key, value]) => {
+                    if (value === null) return null
+                    const labels = {
+                      wheelchairs: '♿ Коляски',
+                      sim: '👤 СИМ',
+                      mobility: '🚶 Мобильность',
+                      nursing: '👶 Материнство'
+                    }
+                    return (
+                      <span key={key} className={`access-badge ${value ? 'yes' : 'no'}`}>
+                        {labels[key]}: {value ? '✓' : '✗'}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           ))}
@@ -195,30 +238,51 @@ export default function PlacePanels({ place, reviews, myReview, onClose, onRevie
 
         {isAuthenticated ? (
           <div className="review-form">
-            <select
-              className="review-rating"
-              value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-              disabled={!canRate || submitting}
-              aria-label="Оценка"
-            >
-              {[5, 4, 3, 2, 1].map((v) => (
-                <option key={v} value={v}>
-                  {v} ★
-                </option>
-              ))}
-            </select>
+            <div className="review-form-section">
+              <div className="review-form-label">Рейтинг:</div>
+              <select
+                className="review-rating"
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+                disabled={!canRate || submitting}
+                aria-label="Оценка"
+              >
+                {[5, 4, 3, 2, 1].map((v) => (
+                  <option key={v} value={v}>
+                    {v} ★
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <input
-              type="text"
-              placeholder="Оставить отзыв..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="review-input"
-              disabled={!canRate || submitting}
-            />
+            <div className="review-accessibility-form">
+              {accessibilityItems.map((item) => (
+                <div key={item.key} className="accessibility-question-inline">
+                  <span>{item.label}?</span>
+                  <div className="accessibility-buttons-inline">
+                    <button
+                      type="button"
+                      className={`accessibility-btn-small ${accessibility[item.key] === true ? 'active yes' : ''}`}
+                      onClick={() => setAccessibility(prev => ({ ...prev, [item.key]: true }))}
+                      disabled={!canRate || submitting}
+                    >
+                      Да
+                    </button>
+                    <button
+                      type="button"
+                      className={`accessibility-btn-small ${accessibility[item.key] === false ? 'active no' : ''}`}
+                      onClick={() => setAccessibility(prev => ({ ...prev, [item.key]: false }))}
+                      disabled={!canRate || submitting}
+                    >
+                      Нет
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
             <button className="review-send" onClick={submit} disabled={!canRate || submitting} aria-label="Отправить">
-              ➜
+              {submitting ? '...' : '➜'}
             </button>
           </div>
         ) : (

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { api } from '../lib/api'
-import { setAccessToken } from '../lib/auth'
+import { setAccessToken, setUserData } from '../lib/auth'
 import './Auth.css'
 
 const Login = () => {
@@ -20,6 +20,7 @@ const Login = () => {
       const data = await api.login(email, password)
       if (!data?.access_token) throw new Error('Не удалось получить токен')
       setAccessToken(data.access_token, { token_type: data.token_type })
+      setUserData(email, password)
       navigate('/')
     } catch (e2) {
       setError(e2?.message || 'Ошибка входа')

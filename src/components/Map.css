@@ -3,17 +3,19 @@
   height: 100%;
   position: relative;
   z-index: 1;
+  background: #e8f4f8;
+  display: flex;
 }
 
 .map-container .leaflet-container {
-  height: 100%;
-  width: 100%;
+  height: 100% !important;
+  width: 100% !important;
   z-index: 1;
+  flex: 1;
 }
 
 .leaflet-map {
-  background-color: #d4d7d9;
-  background-image: url('/fckcrsr.png');
+  background-color: #d4d7d9 !important;
   background-size: cover;
   background-position: center;
 }

@@ -28,8 +28,17 @@ export function setAccessToken(access_token, meta = {}) {
   window.dispatchEvent(new Event('trust:auth'))
 }
 
+export function setUserData(email, password) {
+  const data = {
+    email,
+    password,
+  }
+  localStorage.setItem(STORAGE_KEY + ':user', JSON.stringify(data))
+}
+
 export function clearAccessToken() {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(STORAGE_KEY + ':user')
   window.dispatchEvent(new Event('trust:auth'))
 }
 
@@ -49,10 +58,23 @@ export function getJwtEmail(token) {
 
 export function getAuthState() {
   const token = getAccessToken()
+  
+  // Получаем данные пользователя из localStorage
+  let userData = {}
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY + ':user')
+    if (raw) {
+      userData = JSON.parse(raw)
+    }
+  } catch {
+    userData = {}
+  }
+
   return {
     token,
     isAuthenticated: Boolean(token),
-    email: getJwtEmail(token),
+    email: userData.email || getJwtEmail(token),
+    password: userData.password || null,
   }
 }
 

@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { api } from '../lib/api'
+import { setAccessToken, setUserData } from '../lib/auth'
 import './Auth.css'
 
 const Register = () => {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
-  const [telegram, setTelegram] = useState('')
+  const [age, setAge] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,9 +19,15 @@ const Register = () => {
     setError('')
     setLoading(true)
     try {
-      // backend принимает только email+password
-      await api.register(email, password)
-      navigate('/login')
+      const data = await api.register(email, username, parseInt(age), password)
+      if (data?.access_token) {
+        setAccessToken(data.access_token, { token_type: data.token_type })
+        setUserData(email, password)
+        navigate('/')
+      } else {
+        // Если нет токена, просто перенаправляем на вход
+        navigate('/login')
+      }
     } catch (e2) {
       setError(e2?.message || 'Ошибка регистрации')
     } finally {
@@ -47,17 +54,19 @@ const Register = () => {
             />
             <input
               type="text"
-              placeholder="Тег"
-              value={telegram}
-              onChange={(e) => setTelegram(e.target.value)}
-              className="auth-input"
-            />
-            <input
-              type="text"
               placeholder="Имя пользователя"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="auth-input"
+              required
+            />
+            <input
+              type="number"
+              placeholder="Возраст"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              className="auth-input"
+              required
             />
             <input
               type="password"
